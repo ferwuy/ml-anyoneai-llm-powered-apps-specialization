@@ -24,27 +24,32 @@ class ChatAssistant:
         history_length : int, optional
             The length of the conversation history to be stored in memory. Default is 3.
         """
-        # TODO: Create a string template for the chat assistant. It must indicate the LLM
-        # that a chat history is being provided and that a new question is being asked.
-        # The template must have two input variables: `history` and `human_input`.
+        template = (
+            "You are a helpful AI assistant. "
+            "The following is a conversation history:\n"
+            "{history}\n"
+            "Human: {human_input}\n"
+            "Assistant:"
+        )
 
+        self.prompt = PromptTemplate(
+            input_variables=["history", "human_input"],
+            template=template,
+        )
 
-        # TODO: Create a prompt template using the string template created above.
-        # Hint: Use the `PromptTemplate` class.
-        # Hint: Don't forget to add the input variables: `history` and `human_input`.
-        self.prompt =
+        self.llm = get_llm(
+            model=llm_model,
+            api_key=api_key,
+            temperature=temperature,
+        )
 
-        # TODO: Create an instance of an LLM using the `get_llm` factory function with the appropriate settings.
-        # Remember some settings are being provided in the __init__ function for this class.
-        # Hint: You need to pass `model`, `api_key`, and `temperature` parameters.
-        self.llm =
-
-        # TODO: Create an instance of `LLMChain` with the appropriate settings.
-        # This chain must combine our prompt, llm and also have a memory.
-        # Hint: You can use the `ConversationBufferWindowMemory` class with
-        # `k=history_length`.
-        # Hint: Don't forget to set `output_key="output"`.
-        self.model =
+        self.model = LLMChain(
+            llm=self.llm,
+            prompt=self.prompt,
+            memory=ConversationBufferWindowMemory(k=history_length),
+            verbose=settings.LANGCHAIN_VERBOSE,
+            output_key="output",
+        )
 
     def predict(self, human_input: str) -> str:
         """
